@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ChatSession {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  messages  Message[]
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      MessageRole
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+}
+
+enum MessageRole {
+  user
+  assistant
+}
+
+// MVP KPI tracking - no PII stored
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  event     String   // session_start | first_message | session_end | return_visit | crisis_detected
+  createdAt DateTime @default(now())
+}
